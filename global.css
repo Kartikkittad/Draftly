@@ -1,0 +1,20 @@
+.back-btn{
+    cursor: pointer;
+    background-color: transparent;
+    outline: none;
+    border: 1px solid grey;
+    padding: 5px 10px;
+    border-radius: 4px;
+}
+
+.back-btn:hover{
+    background-color: rgb(231, 231, 231);
+    transition: 0.10s ease-in-out all;
+    cursor: pointer;
+}
+
+.logo-container{
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
