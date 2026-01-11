@@ -1,101 +1,99 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-import { apiJson } from "./../lib/api";
-import { updateTemplate as updateTemplateApi } from "./../lib/api";
-import type { TEditorConfiguration } from "../documents/editor/core";
+import { apiJson } from "../lib/api";
 
-export const fetchTemplates = createAsyncThunk(
+interface FetchTemplatesParams {
+  page?: number;
+  limit?: number;
+  query?: string;
+  isComponent?: boolean;
+}
+
+interface TemplatesState {
+  items: any[];
+  loading: boolean;
+  total: number;
+  currentTemplate: any | null;
+  currentTemplateId: number | null;
+}
+
+const initialState: TemplatesState = {
+  items: [],
+  loading: false,
+  total: 0,
+  currentTemplate: null,
+  currentTemplateId: null,
+};
+
+export const fetchTemplates = createAsyncThunk<
+  {
+    data: any[];
+    count: number;
+    page: number;
+    query: string;
+    limit: number;
+  },
+  FetchTemplatesParams
+>(
   "templates/fetch",
-  async ({ page, limit, query }: any) => {
-    const res = await apiJson.post("/templates/list", {
-      page,
-      limit,
-      query,
-    });
-    // API returns: { status, message, code, data: { data: [...], count: N } }
-    return res.data.data;
+  async (
+    { page = 1, limit = 5, query = "", isComponent },
+    { rejectWithValue }
+  ) => {
+    try {
+      const res = await apiJson.post("/templates/list", {
+        page,
+        limit,
+        query,
+        isComponent,
+      });
+      return res.data.data;
+    } catch {
+      return rejectWithValue("Failed to fetch templates");
+    }
   }
 );
 
 export const createTemplate = createAsyncThunk(
   "templates/create",
-  async (
-    payload: {
-      name: string;
-      subject: string;
-      fromEmailUsername: string;
-      htmlBody: string;
-      editorJson: TEditorConfiguration;
-      isComponent?: boolean;
-    },
-    { rejectWithValue }
-  ) => {
+  async (payload: any, { rejectWithValue }) => {
     try {
       const res = await apiJson.post("/templates/create", payload);
-      // API returns: { status, message, code, data: { id, name, ... } }
       return res.data.data;
     } catch (err: any) {
-      return rejectWithValue(
-        err?.response?.data?.message || "Failed to save template"
-      );
-    }
-  }
-);
-
-export const updateTemplate = createAsyncThunk(
-  "templates/update",
-  async (
-    payload: {
-      templateId: string;
-      name?: string | null;
-      subject?: string | null;
-      fromEmailUsername?: string | null;
-      htmlBody?: string;
-      editorJson?: TEditorConfiguration;
-    },
-    { rejectWithValue }
-  ) => {
-    try {
-      const { templateId, ...updatePayload } = payload;
-      const data = await updateTemplateApi(templateId, updatePayload);
-      return data;
-    } catch (err: any) {
-      return rejectWithValue(
-        err?.response?.data?.message || "Failed to update template"
-      );
+      return rejectWithValue("Failed to create template");
     }
   }
 );
 
 export const loadTemplate = createAsyncThunk(
   "templates/load",
-  async (templateId: string, { rejectWithValue }) => {
+  async (id: string) => {
+    const res = await apiJson.get(`/templates/${id}`);
+    return res.data.data;
+  }
+);
+
+export const updateTemplate = createAsyncThunk(
+  "templates/update",
+  async (payload: { id: string; data: any }, { rejectWithValue }) => {
     try {
-      const res = await apiJson.get(`/templates/${templateId}`);
-      // API returns: { status, message, code, data: { id, name, subject, htmlBody, editorJson, ... } }
+      const res = await apiJson.put(`/templates/${payload.id}`, payload.data);
       return res.data.data;
-    } catch (err: any) {
-      return rejectWithValue(
-        err?.response?.data?.message || "Failed to load template"
-      );
+    } catch {
+      return rejectWithValue("Failed to update template");
     }
   }
 );
 
 const templatesSlice = createSlice({
   name: "templates",
-  initialState: {
-    items: [],
-    loading: false,
-    total: 0,
-    currentTemplate: null as any,
-    currentTemplateId: null as string | null,
-  },
+  initialState,
   reducers: {
-    setCurrentTemplate: (state, action) => {
-      state.currentTemplate = action.payload;
-    },
-    setCurrentTemplateId: (state, action) => {
+    setCurrentTemplateId(state, action) {
       state.currentTemplateId = action.payload;
+    },
+    setCurrentTemplate(state, action) {
+      state.currentTemplate = action.payload;
     },
   },
   extraReducers: (builder) => {
@@ -105,12 +103,10 @@ const templatesSlice = createSlice({
       })
       .addCase(fetchTemplates.fulfilled, (state, action) => {
         state.loading = false;
-        // action.payload is { data: [...], count: N } from res.data.data
-        state.items = action.payload.data || action.payload;
-        state.total = action.payload.count || 0;
+        state.items = action.payload.data;
+        state.total = action.payload.count;
       })
       .addCase(loadTemplate.fulfilled, (state, action) => {
-        // Store the loaded template data for use in edit mode
         state.currentTemplate = action.payload;
       })
       .addCase(updateTemplate.fulfilled, (state, action) => {
@@ -119,6 +115,6 @@ const templatesSlice = createSlice({
   },
 });
 
-export const { setCurrentTemplate, setCurrentTemplateId } =
+export const { setCurrentTemplateId, setCurrentTemplate } =
   templatesSlice.actions;
 export default templatesSlice.reducer;

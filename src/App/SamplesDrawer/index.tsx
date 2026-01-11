@@ -34,7 +34,6 @@ export default function SamplesDrawer() {
   const templatesDropdownRef = useRef<any>(null);
 
   const handleEmptyClick = () => {
-    // Explicitly reset the document and clear template state
     const emptyDocument = getConfiguration("#");
     resetDocument(emptyDocument);
     dispatch(setCurrentTemplate(null) as any);
@@ -47,7 +46,6 @@ export default function SamplesDrawer() {
   };
 
   const handleTemplateReset = () => {
-    // Only reset template dropdown when navigating away from template selection
     dispatch(setCurrentTemplate(null) as any);
     dispatch(setCurrentTemplateId(null) as any);
 
@@ -85,19 +83,7 @@ export default function SamplesDrawer() {
         >
           <div className="logo-container">
             <Link href="/" underline="none" onClick={handleTemplateReset}>
-              <Typography
-                variant="h3"
-                component="h1"
-                sx={{
-                  p: 0.75,
-                  color: "oklch(51.1% 0.262 276.966)",
-                  fontSize: 24,
-                  fontWeight: 700,
-                  fontFamily: "Inter, sans-serif",
-                }}
-              >
-                EmailMaster
-              </Typography>
+              <img src="./logo.png" />
             </Link>
             <button
               onClick={() => {
