@@ -60,8 +60,8 @@ export default function App() {
         toastOptions={{
           style: {
             backgroundColor: "white",
-            border: "1px solid #3b82f6",
-            color: "#3b82f6",
+            border: "1px solid black",
+            color: "black",
           },
         }}
       />

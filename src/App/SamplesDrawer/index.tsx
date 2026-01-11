@@ -83,22 +83,8 @@ export default function SamplesDrawer() {
         >
           <div className="logo-container">
             <Link href="/" underline="none" onClick={handleTemplateReset}>
-              <img src="./logo.png" />
+              <img src="./logo.png" width={120} />
             </Link>
-            <button
-              onClick={() => {
-                window.parent.postMessage(
-                  {
-                    type: "NAVIGATE",
-                    path: "/campaigns/create-campaign",
-                  },
-                  "*" // 👈 no hardcoded origin
-                );
-              }}
-              className="back-btn"
-            >
-              <ArrowBack sx={{ fontSize: 14, textAlign: "center" }} />
-            </button>
           </div>
 
           <Stack alignItems="flex-start">

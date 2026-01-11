@@ -43,3 +43,8 @@ apiJson.interceptors.response.use(
 export const setAccessToken = (token: string) => {
   localStorage.setItem(ACCESS_TOKEN_KEY, token);
 };
+
+export function logout() {
+  localStorage.removeItem("accessToken");
+  window.location.href = "/login";
+}

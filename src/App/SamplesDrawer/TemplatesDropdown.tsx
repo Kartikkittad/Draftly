@@ -60,15 +60,15 @@ const TemplateSelectDropdown = forwardRef((_, ref) => {
   const handleSelectTemplate = async (tpl: any) => {
     setIsLoadingTemplate(true);
     try {
-      const result = await dispatch(loadTemplate(tpl.id) as any).unwrap();
+      const result = await dispatch(loadTemplate(tpl._id) as any).unwrap();
 
       if (!result.editorJson) {
         throw new Error("Template data is incomplete - no editorJson field");
       }
 
       // Store the template ID in Redux and Editor Context
-      dispatch(setCurrentTemplateId(tpl.id) as any);
-      setEditorTemplateId(tpl.id);
+      dispatch(setCurrentTemplateId(tpl._id) as any);
+      setEditorTemplateId(tpl._id);
 
       // Load template with preview mode enabled (atomic state update)
       loadTemplateInPreviewMode(result.editorJson);

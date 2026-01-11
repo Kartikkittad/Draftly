@@ -167,17 +167,17 @@ export default function TemplatePanel() {
 
     const htmlBody = getFinalHtml(document);
 
-    // Determine whether to create or update
     if (isEditMode && currentTemplateId && !isDuplicateMode) {
-      // Update existing template
       dispatch(
         updateTemplate({
-          templateId: currentTemplateId,
-          name,
-          subject,
-          fromEmailUsername,
-          htmlBody,
-          editorJson: document,
+          id: currentTemplateId,
+          data: {
+            name,
+            subject,
+            fromEmailUsername,
+            htmlBody,
+            editorJson: document,
+          },
         }) as any
       )
         .unwrap()
@@ -189,7 +189,6 @@ export default function TemplatePanel() {
           toast.error(err);
         });
     } else {
-      // Create new template (or duplicate)
       dispatch(
         createTemplate({
           name,
@@ -209,15 +208,13 @@ export default function TemplatePanel() {
           setSaveOpen(false);
           setIsDuplicateMode(false);
 
-          // If duplicate mode, auto-load the new template in preview
-          if (isDuplicateMode && createdTemplate?.id) {
-            dispatch(loadTemplate(createdTemplate.id) as any)
+          if (isDuplicateMode && createdTemplate?._id) {
+            dispatch(loadTemplate(createdTemplate._id) as any)
               .unwrap()
               .then((result: any) => {
                 if (result.editorJson) {
-                  // Set template ID for preview mode and load it
-                  dispatch(setReduxTemplateId(createdTemplate.id) as any);
-                  setCurrentTemplateId(createdTemplate.id);
+                  dispatch(setReduxTemplateId(createdTemplate._id) as any);
+                  setCurrentTemplateId(createdTemplate._id);
                   loadTemplateInPreviewMode(result.editorJson);
                   toast.success(
                     `Loaded "${createdTemplate.name}" in preview mode`

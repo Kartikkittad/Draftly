@@ -49,7 +49,7 @@ export default function Register() {
           <img src="./logo.png" width="120" />
         </Box>
 
-        <Typography variant="h5" fontWeight={600} textAlign="center" mb={3}>
+        <Typography variant="h6" fontWeight={500} textAlign="center" mb={3}>
           Create your account
         </Typography>
 
