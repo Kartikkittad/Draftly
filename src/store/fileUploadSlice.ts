@@ -4,11 +4,13 @@ import { apiJson } from "../lib/api";
 interface FileUploadState {
   loading: boolean;
   error: string | null;
+  uploadedFileUrl: string | null;
 }
 
 const initialState: FileUploadState = {
   loading: false,
   error: null,
+  uploadedFileUrl: null,
 };
 
 export const uploadFile = createAsyncThunk(
@@ -34,15 +36,20 @@ export const uploadFile = createAsyncThunk(
 const fileUploadSlice = createSlice({
   name: "fileUpload",
   initialState,
-  reducers: {},
+  reducers: {
+    clearUploadedFile(state) {
+      state.uploadedFileUrl = null;
+    },
+  },
   extraReducers: (builder) => {
     builder
       .addCase(uploadFile.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
-      .addCase(uploadFile.fulfilled, (state) => {
+      .addCase(uploadFile.fulfilled, (state, action) => {
         state.loading = false;
+        state.uploadedFileUrl = action.payload as string;
       })
       .addCase(uploadFile.rejected, (state, action) => {
         state.loading = false;
@@ -51,4 +58,5 @@ const fileUploadSlice = createSlice({
   },
 });
 
+export const { clearUploadedFile } = fileUploadSlice.actions;
 export default fileUploadSlice.reducer;
