@@ -1,6 +1,6 @@
 import React from "react";
 
-import { Box, Drawer, Tab, Tabs } from "@mui/material";
+import { Box, Button, Drawer, Tab, Tabs } from "@mui/material";
 
 import {
   setSidebarTab,
@@ -11,6 +11,9 @@ import {
 
 import ConfigurationPanel from "./ConfigurationPanel";
 import StylesPanel from "./StylesPanel";
+import { Logout } from "@mui/icons-material";
+import IconButton from "@mui/material/IconButton";
+import { logout } from "../../lib/api";
 
 export const INSPECTOR_DRAWER_WIDTH = 320;
 
@@ -51,25 +54,35 @@ export default function InspectorDrawer() {
           height: 49,
           borderBottom: 1,
           borderColor: "divider",
+          display: "flex",
+          alignItems: "center",
+          px: 1,
         }}
       >
-        <Box px={2}>
-          <Tabs
-            value={selectedSidebarTab}
-            onChange={(_, v) => {
-              if (!isPreviewMode) {
-                setSidebarTab(v);
-              }
-            }}
-          >
-            <Tab value="styles" label="Styles" disabled={isPreviewMode} />
-            <Tab
-              value="block-configuration"
-              label="Inspect"
-              disabled={isPreviewMode}
-            />
-          </Tabs>
-        </Box>
+        {/* Tabs */}
+        <Tabs
+          value={selectedSidebarTab}
+          onChange={(_, v) => {
+            if (!isPreviewMode) {
+              setSidebarTab(v);
+            }
+          }}
+        >
+          <Tab value="styles" label="Styles" disabled={isPreviewMode} />
+          <Tab
+            value="block-configuration"
+            label="Inspect"
+            disabled={isPreviewMode}
+          />
+        </Tabs>
+
+        {/* 🔥 Spacer */}
+        <Box sx={{ flexGrow: 1 }} />
+
+        {/* Logout */}
+        <IconButton onClick={logout} sx={{ color: "error.main" }} size="small">
+          <Logout />
+        </IconButton>
       </Box>
       <Box
         sx={{

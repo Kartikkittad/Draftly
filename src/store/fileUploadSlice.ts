@@ -1,6 +1,18 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import { apiJson } from "../lib/api";
 
+interface FileUploadState {
+  loading: boolean;
+  error: string | null;
+  uploadedFileUrl: string | null;
+}
+
+const initialState: FileUploadState = {
+  loading: false,
+  error: null,
+  uploadedFileUrl: null,
+};
+
 export const uploadFile = createAsyncThunk(
   "files/upload",
   async (file: File, { rejectWithValue }) => {
@@ -9,13 +21,8 @@ export const uploadFile = createAsyncThunk(
       formData.append("file", file);
 
       const res = await apiJson.post("/files/upload", formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
+        headers: { "Content-Type": "multipart/form-data" },
       });
-      if (!res.data?.public_url) {
-        throw new Error("Upload response missing public_url");
-      }
 
       return res.data.public_url;
     } catch (err: any) {
@@ -28,19 +35,21 @@ export const uploadFile = createAsyncThunk(
 
 const fileUploadSlice = createSlice({
   name: "fileUpload",
-  initialState: {
-    loading: false,
-    error: null as string | null,
+  initialState,
+  reducers: {
+    clearUploadedFile(state) {
+      state.uploadedFileUrl = null;
+    },
   },
-  reducers: {},
   extraReducers: (builder) => {
     builder
       .addCase(uploadFile.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
-      .addCase(uploadFile.fulfilled, (state) => {
+      .addCase(uploadFile.fulfilled, (state, action) => {
         state.loading = false;
+        state.uploadedFileUrl = action.payload as string;
       })
       .addCase(uploadFile.rejected, (state, action) => {
         state.loading = false;
@@ -49,4 +58,5 @@ const fileUploadSlice = createSlice({
   },
 });
 
+export const { clearUploadedFile } = fileUploadSlice.actions;
 export default fileUploadSlice.reducer;

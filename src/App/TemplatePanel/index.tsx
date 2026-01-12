@@ -6,6 +6,7 @@ import {
   MonitorOutlined,
   PhoneIphoneOutlined,
   SaveOutlined,
+  Send,
 } from "@mui/icons-material";
 import {
   Box,
@@ -33,6 +34,7 @@ import {
 } from "../../documents/editor/EditorContext";
 import ToggleInspectorPanelButton from "../InspectorDrawer/ToggleInspectorPanelButton";
 import ToggleSamplesPanelButton from "../SamplesDrawer/ToggleSamplesPanelButton";
+import SendEmailDialog from "./SendEmailDialog";
 
 import DownloadJson from "./DownloadJson";
 import HtmlPanel from "./HtmlPanel";
@@ -54,6 +56,7 @@ import { useMemo } from "react";
 import { renderToStaticMarkup } from "@usewaypoint/email-builder";
 import { getFinalHtml } from "../../utils/getFinalHtml";
 import type { RootState } from "../../store/store";
+import { sendEmail } from "../../store/emailSlice";
 
 export default function TemplatePanel() {
   const document = useDocument();
@@ -70,7 +73,8 @@ export default function TemplatePanel() {
   const [saveOpen, setSaveOpen] = React.useState(false);
   const [isDuplicateMode, setIsDuplicateMode] = React.useState(false);
 
-  // Get the root block id from the document config
+  const [sendOpen, setSendOpen] = React.useState(false);
+
   const rootBlockId =
     (document &&
       Object.keys(document).find(
@@ -167,17 +171,17 @@ export default function TemplatePanel() {
 
     const htmlBody = getFinalHtml(document);
 
-    // Determine whether to create or update
     if (isEditMode && currentTemplateId && !isDuplicateMode) {
-      // Update existing template
       dispatch(
         updateTemplate({
-          templateId: currentTemplateId,
-          name,
-          subject,
-          fromEmailUsername,
-          htmlBody,
-          editorJson: document,
+          id: currentTemplateId,
+          data: {
+            name,
+            subject,
+            fromEmailUsername,
+            htmlBody,
+            editorJson: document,
+          },
         }) as any
       )
         .unwrap()
@@ -189,7 +193,6 @@ export default function TemplatePanel() {
           toast.error(err);
         });
     } else {
-      // Create new template (or duplicate)
       dispatch(
         createTemplate({
           name,
@@ -209,15 +212,13 @@ export default function TemplatePanel() {
           setSaveOpen(false);
           setIsDuplicateMode(false);
 
-          // If duplicate mode, auto-load the new template in preview
-          if (isDuplicateMode && createdTemplate?.id) {
-            dispatch(loadTemplate(createdTemplate.id) as any)
+          if (isDuplicateMode && createdTemplate?._id) {
+            dispatch(loadTemplate(createdTemplate._id) as any)
               .unwrap()
               .then((result: any) => {
                 if (result.editorJson) {
-                  // Set template ID for preview mode and load it
-                  dispatch(setReduxTemplateId(createdTemplate.id) as any);
-                  setCurrentTemplateId(createdTemplate.id);
+                  dispatch(setReduxTemplateId(createdTemplate._id) as any);
+                  setCurrentTemplateId(createdTemplate._id);
                   loadTemplateInPreviewMode(result.editorJson);
                   toast.success(
                     `Loaded "${createdTemplate.name}" in preview mode`
@@ -243,6 +244,33 @@ export default function TemplatePanel() {
     }
     setIsDuplicateMode(true);
     setSaveOpen(true);
+  };
+
+  const { uploadedFileUrl } = useSelector(
+    (state: RootState) => state.fileUpload
+  );
+
+  const handleSendEmail = async () => {
+    if (!currentTemplateId) {
+      toast.error("Load a template first");
+      return;
+    }
+
+    const fileUrl = uploadedFileUrl;
+
+    dispatch(
+      sendEmail({
+        templateId: currentTemplateId,
+        fileUrl: uploadedFileUrl || undefined,
+      }) as any
+    )
+      .unwrap()
+      .then((res) => {
+        toast.success(`Sent: ${res.sent}, Failed: ${res.failed}`);
+      })
+      .catch((err) => {
+        toast.error(err);
+      });
   };
 
   return (
@@ -312,6 +340,16 @@ export default function TemplatePanel() {
                 </span>
               </Tooltip>
             )}
+            <Tooltip title="Send Email" placement="bottom">
+              <span>
+                <IconButton
+                  disabled={!isPreviewMode}
+                  onClick={() => setSendOpen(true)}
+                >
+                  <Send fontSize="small" />
+                </IconButton>
+              </span>
+            </Tooltip>
             <Tooltip title="Save Template" placement="bottom">
               <span>
                 <IconButton
@@ -366,6 +404,14 @@ export default function TemplatePanel() {
         currentTemplate={currentTemplate}
         isDuplicateMode={isDuplicateMode}
       />
+
+      {currentTemplateId && (
+        <SendEmailDialog
+          open={sendOpen}
+          onClose={() => setSendOpen(false)}
+          templateId={currentTemplateId}
+        />
+      )}
     </>
   );
 }
