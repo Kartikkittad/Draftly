@@ -72,18 +72,7 @@ export default function ButtonSidebarPanel({
     });
   };
 
-  const getPreviewUrl = () => {
-    const apiBase = import.meta.env.VITE_API_URL;
-
-    // Don't wrap unsubscribe URLs
-    if (url.includes("/track/unsubscribe/")) {
-      return url;
-    }
-
-    const encodedUrl = encodeURIComponent(url);
-    const encodedName = encodeURIComponent(text);
-    return `${apiBase}/track/click/{{log_id}}?url=${encodedUrl}&link_name=${encodedName}`;
-  };
+  const getPreviewUrl = () => url;
   const fullWidth = data.props?.fullWidth ?? ButtonPropsDefaults.fullWidth;
   const size = data.props?.size ?? ButtonPropsDefaults.size;
   const buttonStyle =

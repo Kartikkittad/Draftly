@@ -83,7 +83,7 @@ export default function SamplesDrawer() {
         >
           <div className="logo-container">
             <Link href="/" underline="none" onClick={handleTemplateReset}>
-              <img src="./logo.png" width={120} />
+              <img src="/logo.svg" width={220} alt="Draftly logo" />
             </Link>
           </div>
 

@@ -22,8 +22,6 @@ type TButtonProps = {
   block: () => TEditorBlock;
 };
 
-const apiBase = import.meta.env.VITE_API_URL;
-
 export const BUTTONS: TButtonProps[] = [
   {
     label: "Heading",
@@ -170,7 +168,7 @@ export const BUTTONS: TButtonProps[] = [
       data: {
         props: {
           text: "Unsubscribe",
-          url: `${apiBase}/track/unsubscribe/{{log_id}}`,
+          url: "https://example.com/unsubscribe",
         },
         style: {
           padding: { top: 16, bottom: 16, left: 24, right: 24 },

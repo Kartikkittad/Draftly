@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="320" height="84" viewBox="0 0 320 84" fill="none">
+  <defs>
+    <linearGradient id="draftlyGradient" x1="10" y1="10" x2="74" y2="74" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#7C3AED"/>
+      <stop offset="1" stop-color="#2563EB"/>
+    </linearGradient>
+    <filter id="shadow" x="0" y="0" width="96" height="96" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feDropShadow dx="0" dy="4" stdDeviation="4" flood-color="#1E3A8A" flood-opacity="0.2"/>
+    </filter>
+  </defs>
+  <g filter="url(#shadow)">
+    <rect x="10" y="10" width="64" height="64" rx="16" fill="url(#draftlyGradient)"/>
+  </g>
+  <path d="M28 27H45C53.8366 27 61 34.1634 61 43C61 51.8366 53.8366 59 45 59H28V27Z" fill="white"/>
+  <path d="M35 34H45C49.9706 34 54 38.0294 54 43C54 47.9706 49.9706 52 45 52H35V34Z" fill="#DBEAFE"/>
+  <text x="88" y="51" fill="#111827" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="34" font-weight="700" letter-spacing="0.2">Draftly</text>
+  <text x="89" y="66" fill="#6B7280" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="11" font-weight="500" letter-spacing="1.2">EMAIL BUILDER</text>
+</svg>
