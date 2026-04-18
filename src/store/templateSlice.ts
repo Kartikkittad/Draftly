@@ -16,6 +16,24 @@ interface TemplatesState {
   currentTemplateId: number | null;
 }
 
+function unwrapApiPayload(payload: any) {
+  if (!payload || typeof payload !== "object") return payload;
+  if (!("data" in payload)) return payload;
+
+  const nested = payload.data;
+  const isNestedEnvelope =
+    nested &&
+    typeof nested === "object" &&
+    !Array.isArray(nested) &&
+    ("data" in nested ||
+      "count" in nested ||
+      "page" in nested ||
+      "limit" in nested ||
+      "query" in nested);
+
+  return isNestedEnvelope ? nested : payload;
+}
+
 const initialState: TemplatesState = {
   items: [],
   loading: false,
@@ -46,9 +64,18 @@ export const fetchTemplates = createAsyncThunk<
         query,
         isComponent,
       });
-      return res.data.data;
-    } catch {
-      return rejectWithValue("Failed to fetch templates");
+      const payload = unwrapApiPayload(res.data);
+      return {
+        data: payload?.data ?? [],
+        count: payload?.count ?? 0,
+        page: payload?.page ?? page,
+        query: payload?.query ?? query,
+        limit: payload?.limit ?? limit,
+      };
+    } catch (err: any) {
+      return rejectWithValue(
+        err?.response?.data?.message ?? "Failed to fetch templates"
+      );
     }
   }
 );
@@ -58,9 +85,11 @@ export const createTemplate = createAsyncThunk(
   async (payload: any, { rejectWithValue }) => {
     try {
       const res = await apiJson.post("/templates/create", payload);
-      return res.data.data;
+      return unwrapApiPayload(res.data);
     } catch (err: any) {
-      return rejectWithValue("Failed to create template");
+      return rejectWithValue(
+        err?.response?.data?.message ?? "Failed to create template"
+      );
     }
   }
 );
@@ -68,8 +97,31 @@ export const createTemplate = createAsyncThunk(
 export const loadTemplate = createAsyncThunk(
   "templates/load",
   async (id: string) => {
-    const res = await apiJson.get(`/templates/${id}`);
-    return res.data.data;
+    const res = await apiJson.get(`/templates/details/${id}`);
+    const responsePayload = res?.data;
+    const templateData =
+      responsePayload?.data &&
+      typeof responsePayload.data === "object" &&
+      !Array.isArray(responsePayload.data) &&
+      ("_id" in responsePayload.data ||
+        "editorJson" in responsePayload.data ||
+        "htmlBody" in responsePayload.data)
+        ? responsePayload.data
+        : unwrapApiPayload(responsePayload) ?? {};
+
+    let parsedEditorJson = templateData?.editorJson;
+    if (typeof parsedEditorJson === "string") {
+      try {
+        parsedEditorJson = JSON.parse(parsedEditorJson);
+      } catch {
+        parsedEditorJson = null;
+      }
+    }
+
+    return {
+      ...templateData,
+      editorJson: parsedEditorJson,
+    };
   }
 );
 
@@ -78,9 +130,11 @@ export const updateTemplate = createAsyncThunk(
   async (payload: { id: string; data: any }, { rejectWithValue }) => {
     try {
       const res = await apiJson.put(`/templates/${payload.id}`, payload.data);
-      return res.data.data;
-    } catch {
-      return rejectWithValue("Failed to update template");
+      return unwrapApiPayload(res.data);
+    } catch (err: any) {
+      return rejectWithValue(
+        err?.response?.data?.message ?? "Failed to update template"
+      );
     }
   }
 );

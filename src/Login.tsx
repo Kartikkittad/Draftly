@@ -44,11 +44,24 @@ export default function Login() {
           minHeight: "100vh",
           display: "flex",
           flexDirection: "column",
+          alignItems: "center",
           justifyContent: "center",
         }}
       >
         <Box sx={{ textAlign: "center", mb: 3 }}>
-          <img src="./logo.png" width="120" />
+          <img
+            src="/logo.svg"
+            width="220"
+            alt="Draftly logo"
+            style={{
+              margin: "0 auto",
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              textAlign: "center",
+              marginLeft: "15%",
+            }}
+          />
         </Box>
 
         <Typography variant="h6" fontWeight={500} textAlign="center" mb={3}>

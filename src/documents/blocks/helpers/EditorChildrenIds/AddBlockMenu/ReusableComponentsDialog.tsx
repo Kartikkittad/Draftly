@@ -35,35 +35,31 @@ export default function ReusableComponentsDialog({
   onSelectComponent,
 }: Props) {
   const dispatch = useDispatch();
-  const { items, loading } = useSelector((state: RootState) => state.templates);
+  const { items, loading, total } = useSelector(
+    (state: RootState) => state.templates
+  );
 
   const [page, setPage] = useState(1);
   const [query, setQuery] = useState("");
   const [selectedComponent, setSelectedComponent] = useState<any>(null);
 
-  // Filter only components (isComponent: true)
-  const components = items.filter((tpl: any) => tpl.isComponent);
+  const components = items;
 
-  // Pagination
-  const totalPages = Math.ceil(components.length / COMPONENT_LIMIT);
-  const startIndex = (page - 1) * COMPONENT_LIMIT;
-  const paginatedComponents = components.slice(
-    startIndex,
-    startIndex + COMPONENT_LIMIT
-  );
+  // Backend pagination
+  const totalPages = Math.max(1, Math.ceil(total / COMPONENT_LIMIT));
 
   useEffect(() => {
     if (open) {
       dispatch(
         fetchTemplates({
-          page: 1,
-          limit: 100, // Fetch all to allow filtering by isComponent
+          page,
+          limit: COMPONENT_LIMIT,
           query,
+          isComponent: true,
         }) as any
       );
-      setPage(1);
     }
-  }, [open, query, dispatch]);
+  }, [open, page, query, dispatch]);
 
   const handleSelectComponent = () => {
     if (!selectedComponent) {
@@ -118,14 +114,14 @@ export default function ReusableComponentsDialog({
               <Box sx={{ display: "flex", justifyContent: "center", py: 3 }}>
                 <CircularProgress size={24} />
               </Box>
-            ) : paginatedComponents.length === 0 ? (
+            ) : components.length === 0 ? (
               <Typography fontSize={12} color="text.secondary">
                 No components found
               </Typography>
             ) : (
-              paginatedComponents.map((component: any) => (
+              components.map((component: any) => (
                 <Box
-                  key={component.id}
+                  key={component._id ?? component.id}
                   onClick={() => setSelectedComponent(component)}
                   sx={{
                     p: 1,
@@ -157,7 +153,7 @@ export default function ReusableComponentsDialog({
           </Box>
 
           {/* Pagination */}
-          {components.length > COMPONENT_LIMIT && (
+          {total > COMPONENT_LIMIT && (
             <Box
               sx={{
                 display: "flex",

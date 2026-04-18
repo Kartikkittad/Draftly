@@ -53,22 +53,31 @@ const TemplateSelectDropdown = forwardRef((_, ref) => {
         page,
         limit: TEMPLATE_LIMIT,
         query,
+        isComponent: false,
       }) as any
     );
   }, [page, query, dispatch]);
 
   const handleSelectTemplate = async (tpl: any) => {
+    const templateId = tpl?._id ?? tpl?.id;
+    if (!templateId) {
+      toast.error("Invalid template selected");
+      return;
+    }
+
     setIsLoadingTemplate(true);
     try {
-      const result = await dispatch(loadTemplate(tpl._id) as any).unwrap();
+      const result = await dispatch(loadTemplate(templateId) as any).unwrap();
 
       if (!result.editorJson) {
-        throw new Error("Template data is incomplete - no editorJson field");
+        throw new Error(
+          "Template data is incomplete - no valid editorJson field"
+        );
       }
 
       // Store the template ID in Redux and Editor Context
-      dispatch(setCurrentTemplateId(tpl._id) as any);
-      setEditorTemplateId(tpl._id);
+      dispatch(setCurrentTemplateId(templateId) as any);
+      setEditorTemplateId(templateId);
 
       // Load template with preview mode enabled (atomic state update)
       loadTemplateInPreviewMode(result.editorJson);
@@ -77,7 +86,9 @@ const TemplateSelectDropdown = forwardRef((_, ref) => {
       setSelected(tpl);
       setAnchorEl(null);
     } catch (err) {
-      toast.error("Failed to load template");
+      const errorMessage =
+        err instanceof Error ? err.message : "Failed to load template";
+      toast.error(errorMessage);
       console.error(err);
     } finally {
       setIsLoadingTemplate(false);
@@ -147,26 +158,24 @@ const TemplateSelectDropdown = forwardRef((_, ref) => {
             <Box sx={{ display: "flex", justifyContent: "center", py: 2 }}>
               <CircularProgress size={16} />
             </Box>
-          ) : items.filter((tpl: any) => !tpl.isComponent).length === 0 ? (
+          ) : items.length === 0 ? (
             <Typography fontSize={12} color="text.secondary">
               No templates found
             </Typography>
           ) : (
-            items
-              .filter((tpl: any) => !tpl.isComponent)
-              .map((tpl: any) => (
-                <SidebarButton
-                  key={tpl.id}
-                  onClick={() => handleSelectTemplate(tpl)}
-                >
-                  <Box sx={{ display: "flex", flexDirection: "column" }}>
-                    <span>{tpl.name}</span>
-                    <span style={{ fontSize: 11, color: "#888" }}>
-                      {tpl.subject}
-                    </span>
-                  </Box>
-                </SidebarButton>
-              ))
+            items.map((tpl: any) => (
+              <SidebarButton
+                key={tpl._id ?? tpl.id}
+                onClick={() => handleSelectTemplate(tpl)}
+              >
+                <Box sx={{ display: "flex", flexDirection: "column" }}>
+                  <span>{tpl.name}</span>
+                  <span style={{ fontSize: 11, color: "#888" }}>
+                    {tpl.subject}
+                  </span>
+                </Box>
+              </SidebarButton>
+            ))
           )}
         </Box>
       </Popover>
