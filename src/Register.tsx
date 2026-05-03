@@ -6,6 +6,7 @@ import {
   TextField,
   Typography,
   Link,
+  CircularProgress,
 } from "@mui/material";
 import { useDispatch, useSelector } from "react-redux";
 import { registerUser } from "./store/authSlice";
@@ -108,7 +109,14 @@ export default function Register() {
               },
             }}
           >
-            {loading ? "Creating account..." : "Sign up"}
+            {loading ? (
+              <>
+                <CircularProgress size={20} sx={{ color: "inherit", mr: 1 }} />
+                Creating account...
+              </>
+            ) : (
+              "Sign up"
+            )}
           </Button>
 
           <Typography textAlign="center" fontSize={13} mt={3}>
