@@ -102,7 +102,9 @@ export default function SendEmailDialog({ open, onClose, templateId }: Props) {
     )
       .unwrap()
       .then((res) => {
-        toast.success(`Sent: ${res.sent}, Failed: ${res.failed}`);
+        toast.success(
+          `${res.message || "Emails sent"} (Sent: ${res.successful || 0}, Failed: ${res.failed || 0})`
+        );
         onClose();
       })
       .catch((err) => toast.error(err));

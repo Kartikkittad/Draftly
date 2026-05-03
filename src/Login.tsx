@@ -8,6 +8,7 @@ import {
   TextField,
   Typography,
   Link,
+  CircularProgress,
 } from "@mui/material";
 import { useDispatch, useSelector } from "react-redux";
 import { loginUser } from "./store/authSlice";
@@ -110,7 +111,14 @@ export default function Login() {
               },
             }}
           >
-            {loading ? "Signing in..." : "Sign in"}
+            {loading ? (
+              <>
+                <CircularProgress size={20} sx={{ color: "inherit", mr: 1 }} />
+                Signing in...
+              </>
+            ) : (
+              "Sign in"
+            )}
           </Button>
 
           <Typography textAlign="center" fontSize={13} mt={3}>
