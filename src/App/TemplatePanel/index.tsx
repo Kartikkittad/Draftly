@@ -250,28 +250,7 @@ export default function TemplatePanel() {
     (state: RootState) => state.fileUpload
   );
 
-  const handleSendEmail = async () => {
-    if (!currentTemplateId) {
-      toast.error("Load a template first");
-      return;
-    }
 
-    const fileUrl = uploadedFileUrl;
-
-    dispatch(
-      sendEmail({
-        templateId: currentTemplateId,
-        fileUrl: uploadedFileUrl || undefined,
-      }) as any
-    )
-      .unwrap()
-      .then((res) => {
-        toast.success(`Sent: ${res.sent}, Failed: ${res.failed}`);
-      })
-      .catch((err) => {
-        toast.error(err);
-      });
-  };
 
   return (
     <>

@@ -14,6 +14,7 @@ import { sendEmail } from "../../store/emailSlice";
 import { RootState } from "../../store/store";
 import { useState } from "react";
 import { toast } from "sonner";
+import * as XLSX from "xlsx";
 
 type Props = {
   open: boolean;
@@ -23,30 +24,80 @@ type Props = {
 
 export default function SendEmailDialog({ open, onClose, templateId }: Props) {
   const dispatch = useDispatch<any>();
-  const { uploadedFileUrl, loading } = useSelector(
+  const { loading } = useSelector(
     (state: RootState) => state.fileUpload
   );
 
+  const [parsedEmails, setParsedEmails] = useState<string[]>([]);
   const [email, setEmail] = useState("");
+  const { currentTemplate } = useSelector(
+    (state: RootState) => state.templates
+  );
 
   const handleFileUpload = (file: File) => {
-    dispatch(uploadFile(file))
-      .unwrap()
-      .then(() => toast.success("File uploaded"))
-      .catch(() => toast.error("Upload failed"));
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const data = e.target?.result;
+        const workbook = XLSX.read(data, { type: "binary" });
+        const sheetName = workbook.SheetNames[0];
+        const sheet = workbook.Sheets[sheetName];
+        const rows = XLSX.utils.sheet_to_json<any>(sheet);
+        if (rows.length === 0) {
+          toast.error("Empty file");
+          return;
+        }
+
+        const headers = Object.keys(rows[0]);
+        const normalizedHeaders = headers.map((h) => h?.toString().toLowerCase().trim());
+        
+        const hasOnlyExpectedHeaders =
+          normalizedHeaders.length === 2 &&
+          normalizedHeaders.includes("name") &&
+          normalizedHeaders.includes("email");
+
+        if (!hasOnlyExpectedHeaders) {
+          toast.error("The file must contain ONLY 'name' and 'email' columns.");
+          return;
+        }
+
+        const emailKey = headers.find(h => h.toString().toLowerCase().trim() === "email");
+        if (!emailKey) {
+          toast.error("Could not find email column");
+          return;
+        }
+
+        const extractedEmails = rows.map((row) => row[emailKey]).filter((em) => typeof em === "string" && em.trim() !== "");
+        setParsedEmails(extractedEmails);
+        toast.success(`Parsed ${extractedEmails.length} emails from file`);
+      } catch (error) {
+        toast.error("Error parsing the file");
+      }
+    };
+    reader.readAsBinaryString(file);
   };
 
   const handleSend = () => {
-    if (!uploadedFileUrl && !email) {
+    const allEmails = [...parsedEmails];
+    if (email) {
+      allEmails.push(email);
+    }
+
+    if (allEmails.length === 0) {
       toast.error("Upload XLSX or enter an email");
+      return;
+    }
+
+    if (!currentTemplate?.subject || !currentTemplate?.htmlBody) {
+      toast.error("Template subject and html content are required");
       return;
     }
 
     dispatch(
       sendEmail({
-        templateId,
-        fileUrl: uploadedFileUrl || undefined,
-        emails: email ? [{ email }] : undefined,
+        emails: allEmails,
+        subject: currentTemplate.subject,
+        html: currentTemplate.htmlBody,
       })
     )
       .unwrap()
