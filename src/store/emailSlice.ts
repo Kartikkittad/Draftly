@@ -5,10 +5,9 @@ export const sendEmail = createAsyncThunk(
   "email/send",
   async (
     payload: {
-      templateId: string;
-      subject?: string;
-      fileUrl?: string;
-      emails?: { name?: string; email: string }[];
+      emails: string[];
+      subject: string;
+      html: string;
     },
     { rejectWithValue }
   ) => {

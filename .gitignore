@@ -38,8 +38,7 @@ next-env.d.ts
 .vercel
 .env
 
-
-
+dist
 
 # Service worker generated files
 public/sw.js
